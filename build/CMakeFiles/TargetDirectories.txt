@@ -1,0 +1,3 @@
+/home/andrej/andrej/Projects/CalculatorOOP/build/CMakeFiles/Calculator.dir
+/home/andrej/andrej/Projects/CalculatorOOP/build/CMakeFiles/edit_cache.dir
+/home/andrej/andrej/Projects/CalculatorOOP/build/CMakeFiles/rebuild_cache.dir
