@@ -1,3 +1,5 @@
+#include <iostream>
+#include <string>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -8,49 +10,177 @@
 #endif
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
+
+// repair diving on null (bug error with stod and crasjing the programm)
+
+// make settings button
+// make result below the table and make local save
+// make more comfortable window
+
+
+
+GLFWwindow* window;
+
+static std::string display_str = "0";
+static double current_value = 0.0;
+static double pending_value = 0.0;
+static char pending_operation = '_';
+static bool is_new_number = true;
+
+const float button_width = 80.0f;
+const float button_height = 50.0f;
+
+void process_cal_input(const char* label) {
+    std::string s(label);
+    if (s.length() == 1 && std::isdigit(s[0])) {
+        if (is_new_number || display_str == "0") {
+            display_str = s;
+            is_new_number = false;
+        } 
+        else {
+            display_str += s;
+        }
+    }  
+    
+    else if (s == "C") {
+        display_str = "0";
+        current_value = 0.0;
+        pending_value = 0.0;
+        pending_operation = '_';
+        is_new_number = true;
+    }
+
+    else if (s == "CE") {
+        current_value = 0.0;
+        display_str = "0";
+    }
+
+    else if (s == "delete") {
+        if (display_str.length() > 1) {
+            display_str.pop_back();
+        }
+        else {
+            display_str = "0";
+            is_new_number = true;
+        }
+
+    }
+
+    else if (s == ".") {
+        if (is_new_number) {
+            display_str = "0.";
+            is_new_number = false;
+        }
+        else if (display_str.find('.') == std::string::npos) {
+            display_str += s;
+        }  
+    }
+
+    else if (s == "+" || s == "-" || s == "*" || s == "/") {
+        if (pending_operation != '_') {
+            // execute previous operation
+        }
+        pending_value = std::stod(display_str);
+        pending_operation = s[0];
+        is_new_number = true;
+    }
+
+    else if (s == "=") {
+        if (pending_operation != '_') {
+            current_value = std::stod(display_str);
+            double result = pending_value;
+            switch (pending_operation)
+            {
+            case '+':
+                result += current_value;
+                break;
+            
+            case '-':
+                result -= current_value;
+                break;
+
+            case '*':
+                result *= current_value;
+                break;
+
+            case '/':
+                if (current_value == 0) {
+                    display_str = "Cannot divide by zero";
+                    pending_operation = '_';
+                    is_new_number = true;
+                    return;
+                }
+                else result /= current_value;
+                break;
+
+            }
+            display_str = std::to_string(result);
+            pending_operation = '_';
+            is_new_number = true;
+        }
+    }
+
+    else if (s == "+/-") {
+        if (display_str == "0") return;
+        if (display_str.find('-') == std::string::npos) display_str = '-' + display_str;
+        else display_str = display_str.erase(0, 1);
+    }
+     
+
+
+}
+
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
-void CalculatorGUI() {
+void calculator_button(const char* label) {
+    if (ImGui::Button(label, ImVec2(button_width, button_height))) {
+        process_cal_input(label);
+    }
+
+}
+
+void calculator_GUI() {
     static char operation = '+';
     
     static float a = 0.0f; 
     static float b = 0.0f; 
     static float result = 0.0f;
 
+    // glfwSetWindowSize(window, 4 * button_width, 8 * button_height);
+
+    ImGui::SetWindowSize(ImVec2(2 * button_width, 2 * button_height));
+    ImGui::SetNextWindowPos(ImVec2(10, 10));
     ImGui::Begin("Calculator");
-    ImGui::InputFloat("first number", &a);
-    ImGui::InputFloat("second number", &b);
     
+    ImGui::PushItemWidth(ImGui::GetWindowWidth() - 1000);
+    ImGui::InputText("##display", (char*) display_str.c_str(), display_str.size() + 1);
+    ImGui::PopItemWidth();
+
     ImGui::Separator();
 
-    if (ImGui::Button("+")) {
-        result = a + b;
-        operation = '+';
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("-")) {
-        result = a - b;
-        operation = '-';
-    }   
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("*")) {
-        result = a * b;
-        operation = '*';
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("/")) {
-        result = a / b;
-        operation = '/';
-    }
+    calculator_button("delete"); ImGui::SameLine();
+    calculator_button("CE"); ImGui::SameLine();
+    calculator_button("C"); ImGui::SameLine();
+    calculator_button("/");
+    calculator_button("7"); ImGui::SameLine();
+    calculator_button("8"); ImGui::SameLine();
+    calculator_button("9"); ImGui::SameLine();
+    calculator_button("*");
+    calculator_button("4"); ImGui::SameLine();
+    calculator_button("5"); ImGui::SameLine();
+    calculator_button("6"); ImGui::SameLine();
+    calculator_button("-");
+    calculator_button("1"); ImGui::SameLine();
+    calculator_button("2"); ImGui::SameLine();
+    calculator_button("3"); ImGui::SameLine();
+    calculator_button("+");
+    calculator_button("+/-"); ImGui::SameLine();
+    calculator_button("0"); ImGui::SameLine();
+    calculator_button("."); ImGui::SameLine();
+    calculator_button("=");
 
     ImGui::Text("result: %.2f %c %.2f = %.2f", a, operation, b, result);
 
@@ -74,7 +204,7 @@ int main(int, char**)
 
     // Create window with graphics context
     float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor()); // Valid on GLFW 3.3+ only
-    GLFWwindow* window = glfwCreateWindow((int)(1280 * main_scale), (int)(800 * main_scale), "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+    window = glfwCreateWindow((int)(1280 * main_scale), (int)(800 * main_scale), "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
@@ -149,44 +279,8 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        CalculatorGUI();
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-        {
-            static float f = 0.0f;
-            static int counter = 0;
-
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::End();
-        }
-
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
-
+        calculator_GUI();
+        
         // Rendering
         ImGui::Render();
         int display_w, display_h;
