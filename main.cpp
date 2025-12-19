@@ -126,8 +126,6 @@ void process_cal_input(const char* label) {
         else display_str = display_str.erase(0, 1);
     }
      
-
-
 }
 
 static void glfw_error_callback(int error, const char* description)
@@ -152,14 +150,20 @@ void calculator_GUI() {
     // glfwSetWindowSize(window, 4 * button_width, 8 * button_height);
 
     ImGui::SetWindowSize(ImVec2(2 * button_width, 2 * button_height));
-    ImGui::SetNextWindowPos(ImVec2(10, 10));
+    ImGui::SetNextWindowPos(ImVec2(20, 20));
     ImGui::Begin("Calculator");
     
-    ImGui::PushItemWidth(ImGui::GetWindowWidth() - 1000);
+    ImGui::PushItemWidth(ImGui::GetWindowWidth() - 50);
     ImGui::InputText("##display", (char*) display_str.c_str(), display_str.size() + 1);
     ImGui::PopItemWidth();
 
     ImGui::Separator();
+
+    calculator_button("NUMSYS"); ImGui::SameLine();
+    // ImGui::PushItemWidth(ImGui::GetWindowWidth() - 50);
+    // ImGui::InputText("##display", (char*) display_str.c_str(), display_str.size() + 1);
+    // ImGui::PopItemWidth();
+    // need selector
 
     calculator_button("delete"); ImGui::SameLine();
     calculator_button("CE"); ImGui::SameLine();
