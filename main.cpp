@@ -11,13 +11,13 @@
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
 
-// repair diving on null (bug error with stod and crasjing the programm)
+// repair diving on null (bug error with stod and crashing the programm)
 
 // make settings button
 // make result below the table and make local save
 // make more comfortable window
 
-
+// see instruction site
 
 GLFWwindow* window;
 
@@ -137,8 +137,8 @@ void calculator_button(const char* label) {
     if (ImGui::Button(label, ImVec2(button_width, button_height))) {
         process_cal_input(label);
     }
-
 }
+
 
 void calculator_GUI() {
     static char operation = '+';
@@ -147,10 +147,14 @@ void calculator_GUI() {
     static float b = 0.0f; 
     static float result = 0.0f;
 
+    ImGuiIO &io = ImGui::GetIO();
+    ImVec2 middle_screen(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
+    ImGui::SetNextWindowPos(middle_screen, ImGuiCond_FirstUseEver, ImVec2(0.5f,0.5f));
+    ImGui::SetWindowSize(ImVec2(2 * button_width, 2 * button_height));
     // glfwSetWindowSize(window, 4 * button_width, 8 * button_height);
 
-    ImGui::SetWindowSize(ImVec2(2 * button_width, 2 * button_height));
-    ImGui::SetNextWindowPos(ImVec2(20, 20));
+    
+    
     ImGui::Begin("Calculator");
     
     ImGui::PushItemWidth(ImGui::GetWindowWidth() - 50);
@@ -159,34 +163,99 @@ void calculator_GUI() {
 
     ImGui::Separator();
 
-    calculator_button("NUMSYS"); ImGui::SameLine();
+    ImGui::Text("NUMSYS"); ImGui::SameLine();
     // ImGui::PushItemWidth(ImGui::GetWindowWidth() - 50);
     // ImGui::InputText("##display", (char*) display_str.c_str(), display_str.size() + 1);
     // ImGui::PopItemWidth();
     // need selector
+    // ImGui::BeginCombo("Numsys", "10");
+    const char* items[] = { "2", "8", "10", "16"};
+    static int current_index = 2;
+    ImGui::Combo(" ", &current_index, items, IM_ARRAYSIZE(items));
+    // ImGui::EndCombo(); 
+    
+    // Begin and EndDisabled for 4 systems and create other file
+    // Make normal size in fields
+    // Make winow calculator to ImGui window
 
-    calculator_button("delete"); ImGui::SameLine();
-    calculator_button("CE"); ImGui::SameLine();
-    calculator_button("C"); ImGui::SameLine();
-    calculator_button("/");
-    calculator_button("7"); ImGui::SameLine();
-    calculator_button("8"); ImGui::SameLine();
-    calculator_button("9"); ImGui::SameLine();
-    calculator_button("*");
-    calculator_button("4"); ImGui::SameLine();
-    calculator_button("5"); ImGui::SameLine();
-    calculator_button("6"); ImGui::SameLine();
-    calculator_button("-");
-    calculator_button("1"); ImGui::SameLine();
-    calculator_button("2"); ImGui::SameLine();
-    calculator_button("3"); ImGui::SameLine();
-    calculator_button("+");
-    calculator_button("+/-"); ImGui::SameLine();
-    calculator_button("0"); ImGui::SameLine();
-    calculator_button("."); ImGui::SameLine();
-    calculator_button("=");
+    if (current_index == 0) {
+        calculator_button("delete"); ImGui::SameLine();
+        calculator_button("CE"); ImGui::SameLine();
+        calculator_button("C"); ImGui::SameLine();
+        calculator_button("/");
+        ImGui::BeginDisabled();
+        calculator_button("7"); ImGui::SameLine();
+        calculator_button("8"); ImGui::SameLine();
+        calculator_button("9"); ImGui::SameLine();
+        ImGui::EndDisabled();
+        calculator_button("*");
+        ImGui::BeginDisabled();
+        calculator_button("4"); ImGui::SameLine();
+        calculator_button("5"); ImGui::SameLine();
+        calculator_button("6"); ImGui::SameLine();
+        ImGui::EndDisabled();
+        calculator_button("-");
+        calculator_button("1"); ImGui::SameLine();
+        ImGui::BeginDisabled();
+        calculator_button("2"); ImGui::SameLine();
+        calculator_button("3"); ImGui::SameLine();
+        ImGui::EndDisabled();
+        calculator_button("+");
+        calculator_button("+/-"); ImGui::SameLine();
+        calculator_button("0"); ImGui::SameLine();
+        calculator_button("."); ImGui::SameLine();
+        calculator_button("=");
+    }
+    
+    else if (current_index == 1) {
+        calculator_button("delete"); ImGui::SameLine();
+        calculator_button("CE"); ImGui::SameLine();
+        calculator_button("C"); ImGui::SameLine();
+        calculator_button("/");
+        calculator_button("7"); ImGui::SameLine();
+        calculator_button("8"); ImGui::SameLine();
+        ImGui::BeginDisabled();
+        calculator_button("9"); ImGui::SameLine();
+        ImGui::EndDisabled();
+        calculator_button("*");
+        calculator_button("4"); ImGui::SameLine();
+        calculator_button("5"); ImGui::SameLine();
+        calculator_button("6"); ImGui::SameLine();
+        calculator_button("-");
+        calculator_button("1"); ImGui::SameLine();
+        calculator_button("2"); ImGui::SameLine();
+        calculator_button("3"); ImGui::SameLine();
+        calculator_button("+");
+        calculator_button("+/-"); ImGui::SameLine();
+        calculator_button("0"); ImGui::SameLine();
+        calculator_button("."); ImGui::SameLine();
+        calculator_button("=");
+    }
 
-    ImGui::Text("result: %.2f %c %.2f = %.2f", a, operation, b, result);
+    else if (current_index == 2) {
+        calculator_button("delete"); ImGui::SameLine();
+        calculator_button("CE"); ImGui::SameLine();
+        calculator_button("C"); ImGui::SameLine();
+        calculator_button("/");
+        calculator_button("7"); ImGui::SameLine();
+        calculator_button("8"); ImGui::SameLine();
+        calculator_button("9"); ImGui::SameLine();
+        calculator_button("*");
+        calculator_button("4"); ImGui::SameLine();
+        calculator_button("5"); ImGui::SameLine();
+        calculator_button("6"); ImGui::SameLine();
+        calculator_button("-");
+        calculator_button("1"); ImGui::SameLine();
+        calculator_button("2"); ImGui::SameLine();
+        calculator_button("3"); ImGui::SameLine();
+        calculator_button("+");
+        calculator_button("+/-"); ImGui::SameLine();
+        calculator_button("0"); ImGui::SameLine();
+        calculator_button("."); ImGui::SameLine();
+        calculator_button("=");
+    }
+
+    
 
     ImGui::End();
 }
@@ -203,24 +272,42 @@ int main(int, char**)
     const char* glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 
     // Create window with graphics context
     float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor()); // Valid on GLFW 3.3+ only
+    
+    const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+   
+
     window = glfwCreateWindow((int)(1280 * main_scale), (int)(800 * main_scale), "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
     if (window == nullptr)
         return 1;
+    
+    GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+    int monitorX, monitorY;
+    glfwGetMonitorPos(monitor, &monitorX, &monitorY);
+    
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+    
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    
+    glfwSetWindowPos(window, monitorX + (mode->width - windowWidth) / 2, monitorY + (mode->height - windowHeight) / 2);
+    glfwShowWindow(window);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    // ImGui::CreateContext();
+    // ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
+    io.IniFilename = NULL;
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsLight();
@@ -283,6 +370,7 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        //ImGui::ShowDemoWindow();
         calculator_GUI();
         
         // Rendering
