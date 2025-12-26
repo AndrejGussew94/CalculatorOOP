@@ -4,20 +4,13 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>
-#define GL_SILENCE_DEPRECATION
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-#include <GLES2/gl2.h>
-#endif
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
 
 // repair diving on null (bug error with stod and crashing the programm)
 
-// make settings button
+// make settings button(at last swicht mode or switch theme)
 // make result below the table and make local save
-// make more comfortable window
-
-// see instruction site
 
 GLFWwindow* window;
 
@@ -29,6 +22,11 @@ static bool is_new_number = true;
 
 const float button_width = 80.0f;
 const float button_height = 50.0f;
+
+static void glfw_error_callback(int error, const char* description)
+{
+    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
 
 void process_cal_input(const char* label) {
     std::string s(label);
@@ -128,17 +126,11 @@ void process_cal_input(const char* label) {
      
 }
 
-static void glfw_error_callback(int error, const char* description)
-{
-    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
-}
-
 void calculator_button(const char* label) {
     if (ImGui::Button(label, ImVec2(button_width, button_height))) {
         process_cal_input(label);
     }
 }
-
 
 void calculator_GUI() {
     static char operation = '+';
@@ -151,111 +143,90 @@ void calculator_GUI() {
     ImVec2 middle_screen(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
     ImGui::SetNextWindowPos(middle_screen, ImGuiCond_FirstUseEver, ImVec2(0.5f,0.5f));
     ImGui::SetWindowSize(ImVec2(2 * button_width, 2 * button_height));
-    // glfwSetWindowSize(window, 4 * button_width, 8 * button_height);
+   
+    ImGui::Begin("Calculator", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse);
 
+    ImGui::SetWindowFontScale(1.4f);
     
-    
-    ImGui::Begin("Calculator");
-    
-    ImGui::PushItemWidth(ImGui::GetWindowWidth() - 50);
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(20, 15));
+
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.8f, 0.0f, 0.0f, 0.5f));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.0f, 0.9f));
+
+    ImGui::PushItemWidth(button_width * 4 + 24);
     ImGui::InputText("##display", (char*) display_str.c_str(), display_str.size() + 1);
+    
     ImGui::PopItemWidth();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(2);
 
+    ImGui::Spacing();
     ImGui::Separator();
+    ImGui::Spacing();
 
+    ImGui::SetWindowFontScale(1.2f);
     ImGui::Text("NUMSYS"); ImGui::SameLine();
-    // ImGui::PushItemWidth(ImGui::GetWindowWidth() - 50);
-    // ImGui::InputText("##display", (char*) display_str.c_str(), display_str.size() + 1);
-    // ImGui::PopItemWidth();
-    // need selector
-    // ImGui::BeginCombo("Numsys", "10");
-    const char* items[] = { "2", "8", "10", "16"};
+    ImGui::SetWindowFontScale(1.0f);
+   
+    const char* items[] = { "BIN (2)", "OCT (8)", "DEC (10)", "HEX (16)"};
     static int current_index = 2;
+    static int last_index = -1;
     ImGui::Combo(" ", &current_index, items, IM_ARRAYSIZE(items));
-    // ImGui::EndCombo(); 
     
-    // Begin and EndDisabled for 4 systems and create other file
-    // Make normal size in fields
-    // Make winow calculator to ImGui window
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+    
+    auto BeginMode = [&](int button_value) {
+        bool disabled = false;
+        if (current_index == 0 && button_value > 1) disabled = true;
+        if (current_index == 1 && button_value > 7) disabled = true;
+        if (disabled) ImGui::BeginDisabled();
+        return disabled;
+    };
 
-    if (current_index == 0) {
-        calculator_button("delete"); ImGui::SameLine();
-        calculator_button("CE"); ImGui::SameLine();
-        calculator_button("C"); ImGui::SameLine();
-        calculator_button("/");
-        ImGui::BeginDisabled();
-        calculator_button("7"); ImGui::SameLine();
-        calculator_button("8"); ImGui::SameLine();
-        calculator_button("9"); ImGui::SameLine();
-        ImGui::EndDisabled();
-        calculator_button("*");
-        ImGui::BeginDisabled();
-        calculator_button("4"); ImGui::SameLine();
-        calculator_button("5"); ImGui::SameLine();
-        calculator_button("6"); ImGui::SameLine();
-        ImGui::EndDisabled();
-        calculator_button("-");
-        calculator_button("1"); ImGui::SameLine();
-        ImGui::BeginDisabled();
-        calculator_button("2"); ImGui::SameLine();
-        calculator_button("3"); ImGui::SameLine();
-        ImGui::EndDisabled();
-        calculator_button("+");
-        calculator_button("+/-"); ImGui::SameLine();
-        calculator_button("0"); ImGui::SameLine();
-        calculator_button("."); ImGui::SameLine();
-        calculator_button("=");
-    }
+    auto EndMode = [&](bool d) {
+        if (d) ImGui::EndDisabled(); 
+    };
     
-    else if (current_index == 1) {
-        calculator_button("delete"); ImGui::SameLine();
-        calculator_button("CE"); ImGui::SameLine();
-        calculator_button("C"); ImGui::SameLine();
-        calculator_button("/");
-        calculator_button("7"); ImGui::SameLine();
-        calculator_button("8"); ImGui::SameLine();
-        ImGui::BeginDisabled();
-        calculator_button("9"); ImGui::SameLine();
-        ImGui::EndDisabled();
-        calculator_button("*");
-        calculator_button("4"); ImGui::SameLine();
-        calculator_button("5"); ImGui::SameLine();
-        calculator_button("6"); ImGui::SameLine();
-        calculator_button("-");
-        calculator_button("1"); ImGui::SameLine();
-        calculator_button("2"); ImGui::SameLine();
-        calculator_button("3"); ImGui::SameLine();
-        calculator_button("+");
-        calculator_button("+/-"); ImGui::SameLine();
-        calculator_button("0"); ImGui::SameLine();
-        calculator_button("."); ImGui::SameLine();
-        calculator_button("=");
+    calculator_button("delete"); ImGui::SameLine();
+    calculator_button("CE"); ImGui::SameLine();
+    calculator_button("C"); ImGui::SameLine();
+    calculator_button("/");
+    
+    bool disable_7 = BeginMode(7); calculator_button("7"); ImGui::SameLine(); EndMode(disable_7);
+    bool disable_8 = BeginMode(8); calculator_button("8"); ImGui::SameLine(); EndMode(disable_8);
+    bool disable_9 = BeginMode(9); calculator_button("9"); ImGui::SameLine(); EndMode(disable_9);
+    calculator_button("*");
+
+    bool disable_4 = BeginMode(4); calculator_button("4"); ImGui::SameLine(); EndMode(disable_4);
+    bool disable_5 = BeginMode(5); calculator_button("5"); ImGui::SameLine(); EndMode(disable_5);
+    bool disable_6 = BeginMode(6); calculator_button("6"); ImGui::SameLine(); EndMode(disable_6);
+    calculator_button("-");
+
+    bool disable_1 = BeginMode(1); calculator_button("1"); ImGui::SameLine(); EndMode(disable_1);
+    bool disable_2 = BeginMode(2); calculator_button("2"); ImGui::SameLine(); EndMode(disable_2);
+    bool disable_3 = BeginMode(3); calculator_button("3"); ImGui::SameLine(); EndMode(disable_3);
+    calculator_button("+");
+    calculator_button("+/-"); ImGui::SameLine();
+    calculator_button("0"); ImGui::SameLine();
+    calculator_button("."); ImGui::SameLine();
+    calculator_button("=");
+
+    if (current_index != last_index) {
+        int target_width = 365;
+        int target_height = (current_index == 3) ? 510 : 410;
+        glfwSetWindowSize(window, target_width, target_height);
+        last_index = current_index;
     }
 
-    else if (current_index == 2) {
-        calculator_button("delete"); ImGui::SameLine();
-        calculator_button("CE"); ImGui::SameLine();
-        calculator_button("C"); ImGui::SameLine();
-        calculator_button("/");
-        calculator_button("7"); ImGui::SameLine();
-        calculator_button("8"); ImGui::SameLine();
-        calculator_button("9"); ImGui::SameLine();
-        calculator_button("*");
-        calculator_button("4"); ImGui::SameLine();
-        calculator_button("5"); ImGui::SameLine();
-        calculator_button("6"); ImGui::SameLine();
-        calculator_button("-");
-        calculator_button("1"); ImGui::SameLine();
-        calculator_button("2"); ImGui::SameLine();
-        calculator_button("3"); ImGui::SameLine();
-        calculator_button("+");
-        calculator_button("+/-"); ImGui::SameLine();
-        calculator_button("0"); ImGui::SameLine();
-        calculator_button("."); ImGui::SameLine();
-        calculator_button("=");
+    if (current_index == 3) {
+        const char* hex_buttons[] = {"A", "B", "C", "D", "E", "F"};
+        for (int i = 0; i < 6; i++) {
+            calculator_button(hex_buttons[i]);
+            if (i != 2 && i != 5) ImGui::SameLine();
+        }
     }
-
-    
 
     ImGui::End();
 }
@@ -273,8 +244,6 @@ int main(int, char**)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 
     // Create window with graphics context
     float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor()); // Valid on GLFW 3.3+ only
@@ -282,7 +251,7 @@ int main(int, char**)
     const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
    
 
-    window = glfwCreateWindow((int)(1280 * main_scale), (int)(800 * main_scale), "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+    window = glfwCreateWindow((int)(365 * main_scale), (int)(410 * main_scale), "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
     if (window == nullptr)
         return 1;
     
@@ -301,10 +270,6 @@ int main(int, char**)
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    // ImGui::CreateContext();
-    // ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.IniFilename = NULL;
@@ -319,9 +284,6 @@ int main(int, char**)
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-#ifdef __EMSCRIPTEN__
-    ImGui_ImplGlfw_InstallEmscriptenCallbacks(window, "#canvas");
-#endif
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Load Fonts
@@ -344,7 +306,7 @@ int main(int, char**)
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(1.00f, 0.55f, 0.60f, 1.00f);
+    ImVec4 clear_color = ImVec4(0.06f, 0.06f, 0.06f, 0.94f);
 
     // Main loop
 
@@ -384,9 +346,6 @@ int main(int, char**)
 
         glfwSwapBuffers(window);
     }
-#ifdef __EMSCRIPTEN__
-    EMSCRIPTEN_MAINLOOP_END;
-#endif
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
